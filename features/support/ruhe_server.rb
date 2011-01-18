@@ -5,9 +5,13 @@ module Ruhe
     get '/' do
       <<EOJ
 {
-    "name": "Joey Joe-Joe Junior Shabadoo"
+    "people": []
 }
 EOJ
+    end
+
+    post '/' do
+      status 201
     end
   end
 end

@@ -1,13 +1,21 @@
 require 'patron'
 
-When /^(.+) receives GET$/ do |resource|
-  ruhe.get resource
+When /^(.+) receives (\w+)$/ do |resource, method|
+  ruhe.apply(method, resource)
+end
+
+When /^(.+) receives (\w+) with:$/ do |resource, method, body|
+  ruhe.apply(method, resource, :body => body)
 end
 
 Then /^it responds (\d+\s\w+) with:$/ do |status, body|
   # TODO: ruhe.should respond_with(status, body)
   ruhe.response_status.should =~ /#{status}$/
   ruhe.response_body.should == body
+end
+
+Then /^it responds (\d+\s\w+)$/ do |status|
+  ruhe.response_status.should =~ /#{status}$/
 end
 
 module Ruhe
@@ -17,8 +25,21 @@ module Ruhe
       @client.base_url = base_url
     end
 
+    def apply(method, resource, opts={})
+      args = {
+        'GET' => [:get, resource],
+        'POST' => [:post, resource, opts[:body]]
+      }[method]
+
+      @response = @client.send(*args)
+    end
+
     def get(resource)
-      @response = @client.get(resource)
+      apply('GET', resource)
+    end
+
+    def post(resource, body)
+      apply('POST', resource, body)
     end
 
     def response_body
